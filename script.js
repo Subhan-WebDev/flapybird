@@ -8,9 +8,10 @@ const bird = {
     width: 20,
     height: 20,
     gravity: 0.3,
-    lift: -1,
+    lift: -10,
     velocity: 0,
-    jumpCooldown: 5 // Cooldown timer for jumping
+    jumpCooldown: 0, // Cooldown timer for jumping
+    maxUpwardVelocity: -7 // Cap the upward velocity
 };
 
 // Pipe properties
@@ -23,16 +24,33 @@ let frameCount = 0;
 // Game properties
 let score = 0;
 let isGameOver = false;
-const jumpCooldownTime = 10; // Number of frames between allowed ju mps
+const jumpCooldownTime = 15; // Increased number of frames between allowed jumps
 
-document.addEventListener('keydown', () => {
+function handleJump() {
     if (!isGameOver && bird.jumpCooldown === 0) {
-        bird.velocity += bird.lift;
+        bird.velocity = Math.max(bird.velocity + bird.lift, bird.maxUpwardVelocity); // Cap the upward velocity
         bird.jumpCooldown = jumpCooldownTime; // Set the cooldown
     } else if (isGameOver) {
         resetGame();
     }
-});
+}
+
+// Adjust event listener based on window width
+function setupInput() {
+    if (window.innerWidth < 780) {
+        document.removeEventListener('keydown', handleJump);
+        canvas.addEventListener('click', handleJump);
+    } else {
+        canvas.removeEventListener('click', handleJump);
+        document.addEventListener('keydown', handleJump);
+    }
+}
+
+// Initialize input handling
+setupInput();
+
+// Re-adjust input handling when the window is resized
+window.addEventListener('resize', setupInput);
 
 function resetGame() {
     bird.y = 150;
